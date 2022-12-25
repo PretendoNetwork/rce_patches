@@ -48,6 +48,14 @@ struct __attribute__((__packed__)) enl_RecordHeader
 	uint16_t mContentLength;
 };
 
+struct enl_Buffer
+{
+	uint8_t *mData;
+	size_t mCapacity;
+	size_t mSize;
+	bool isAllocated;
+};
+
 struct enl_ContentTransporter
 {
 	struct ContentTransporterVtbl

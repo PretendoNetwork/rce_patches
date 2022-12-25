@@ -18,30 +18,47 @@ enl_ContentTransporter *(*real_enl_TransportManager_getContentTransporter)(void 
 DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, signed char const &bufferId, uint8_t *data, uint32_t size)
 {
 
+	// Check for end record in the data, if there is not, drop packet
+	bool hasEndRecord = false;
+
 	// Loop through all records and check if there's a bad record (size mismatch) until out of bounds or end record
 	uint8_t *pData = data;
 	while (pData < (data + size))
 	{
 		enl_RecordHeader *record = (enl_RecordHeader *)pData;
 		if (record->mContentLength == 0 && record->mContentTransporterID == 0xff)
+		{
+			hasEndRecord = true;
 			break;
+		}
 
 		enl_ContentTransporter *contentTransp = real_enl_TransportManager_getContentTransporter(_this, record->mContentTransporterID);
 		// Actual fix for the ENL nullptr deref crash (lmao)
 		if (!contentTransp)
 			return;
 
-		// Fix for RCE (if size mismatch, do not handle packet.)
-		if (record->mContentLength > contentTransp->vtable->getSendBufferSize(contentTransp))
+		if (record->mContentLength > 0x440)
 			return;
 
 		pData += sizeof(enl_RecordHeader);
 		pData += record->mContentLength;
 	}
 
+	if (!hasEndRecord)
+		return;
+
 	return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, data, size);
 }
 
+DECL_FUNCTION(void, enl_Buffer_set, enl_Buffer *_this, uint8_t const *data, size_t size)
+{
+	// Fix for the RCE
+	if (!_this->mData || !size || size > _this->mCapacity)
+		return;
+
+	memcpy(_this->mData, data, size);
+	_this->mSize = size;
+}
 // ==========================================================================================
 
 void MARIO_KART_8_ApplyPatch(EPatchType type)
@@ -80,6 +97,14 @@ void MARIO_KART_8_ApplyPatch(EPatchType type)
 			FP_TARGET_PROCESS_GAME_AND_MENU);
 		FunctionPatcherPatchFunction(&repl, nullptr);
 
+		addr_func = turbo_rpx->textAddr + 0x8CF228;
+		repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
+			enl_Buffer_set,
+			OSEffectiveToPhysical(addr_func),
+			addr_func,
+			FP_TARGET_PROCESS_GAME_AND_MENU);
+		FunctionPatcherPatchFunction(&repl, nullptr);
+
 		WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_BUFFER_RCE)");
 	}
 }
@@ -104,6 +129,15 @@ void SPLATOON_ApplyPatch(EPatchType type)
 		uint32_t addr_func = gambit_rpx->textAddr + 0xB41140;
 		function_replacement_data_t repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
 			enl_TransportManager_updateReceiveBuffer_,
+			OSEffectiveToPhysical(addr_func),
+			addr_func,
+			FP_TARGET_PROCESS_GAME_AND_MENU);
+		FunctionPatcherPatchFunction(&repl, nullptr);
+
+		// Address of 'enl:Buffer::set'
+		addr_func = gambit_rpx->textAddr + 0xB4D178;
+		repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
+			enl_Buffer_set,
 			OSEffectiveToPhysical(addr_func),
 			addr_func,
 			FP_TARGET_PROCESS_GAME_AND_MENU);
