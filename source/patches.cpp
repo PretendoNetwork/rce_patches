@@ -108,7 +108,7 @@ void SPLATOON_ApplyPatch(EPatchType type)
 			FP_TARGET_PROCESS_GAME_AND_MENU);
 		FunctionPatcherPatchFunction(&repl, nullptr);
 
-		WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_ID_TOKEN_RCE)");
+		WHBLogPrintf("rce_patches: Patched Splatoon (PATCH_ENL_ID_TOKEN_RCE)");
 	}
 
 	if (type == PATCH_ENL_BUFFER_RCE)
@@ -124,6 +124,6 @@ void SPLATOON_ApplyPatch(EPatchType type)
 			FP_TARGET_PROCESS_GAME_AND_MENU);
 		FunctionPatcherPatchFunction(&repl, nullptr);
 
-		WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_BUFFER_RCE)");
+		WHBLogPrintf("rce_patches: Patched Splatoon (PATCH_ENL_BUFFER_RCE)");
 	}
 }
