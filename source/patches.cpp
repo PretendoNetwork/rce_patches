@@ -4,7 +4,6 @@
 
 DECL_FUNCTION(bool, enl_ParseIdentificationToken, void *identifiationInfo, sead_String *identificationToken)
 {
-
 	// Fix for RCE (stack overflow if identification buffer was bigger than 16)
 	if (strnlen(identificationToken->mBuffer, 16) == 16)
 	{
@@ -33,7 +32,7 @@ DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, sign
 			return;
 
 		// Fix for RCE (if size mismatch, do not handle packet.)
-		if (contentTransp->vtable->getSendBufferSize(contentTransp) != record->mContentLength)
+		if (record->mContentLength > contentTransp->vtable->getSendBufferSize(contentTransp))
 			return;
 
 		pData += sizeof(enl_RecordHeader);
