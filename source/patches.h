@@ -36,8 +36,6 @@ struct GamePatches
 	void (*mPatchFunc)(EPatchType type);
 };
 
-// ==========================================================================================
-
 struct sead_String
 {
 	char *mBuffer;
@@ -70,6 +68,8 @@ struct enl_ContentTransporter
 	};
 	ContentTransporterVtbl *vtable;
 };
+
+// ==========================================================================================
 
 #define MARIO_KART_8_TID_J 0x000500001010EB00
 #define MARIO_KART_8_TID_U 0x000500001010EC00

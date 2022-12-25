@@ -1,21 +1,5 @@
 #include "patches.h"
 
-uint32_t doBL(uint32_t dst, uint32_t src)
-{
-	uint32_t newval = (dst - src);
-	newval &= 0x03FFFFFC;
-	newval |= 0x48000001;
-	return newval;
-}
-
-void Write_U32(uint32_t addr, uint32_t value)
-{
-	KernelCopyData(OSEffectiveToPhysical(addr), OSEffectiveToPhysical((uint32_t)&value), sizeof(value));
-	// Only works on AROMA! WUPS 0.1's KernelCopyData is uncached, needs DCInvalidate here instead
-	DCFlushRange((void *)addr, sizeof(value));
-	ICInvalidateRange((void *)addr, sizeof(value));
-}
-
 // ==========================================================================================
 
 DECL_FUNCTION(bool, enl_ParseIdentificationToken, void *identifiationInfo, sead_String *identificationToken)
@@ -59,6 +43,8 @@ DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, sign
 	return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, data, size);
 }
 
+// ==========================================================================================
+
 void MARIO_KART_8_ApplyPatch(EPatchType type)
 {
 	auto turbo_rpx = FindRPL(*gRPLInfo, "Turbo.rpx");
@@ -101,4 +87,43 @@ void MARIO_KART_8_ApplyPatch(EPatchType type)
 
 // ==========================================================================================
 
-void SPLATOON_ApplyPatch(EPatchType) {}
+void SPLATOON_ApplyPatch(EPatchType type)
+{
+
+	auto gambit_rpx = FindRPL(*gRPLInfo, "Gambit.rpx");
+	if (!gambit_rpx)
+	{
+		WHBLogPrintf("rce_patches: Couldn't find Gambit.rpx ...");
+		return;
+	}
+
+	if (type == PATCH_ENL_ID_TOKEN_RCE)
+	{
+		// Address of 'enl::PiaUtil::ParseIdentificationToken'
+		uint32_t addr_func = gambit_rpx->textAddr + 0xB32C08;
+		function_replacement_data_t repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
+			enl_ParseIdentificationToken,
+			OSEffectiveToPhysical(addr_func),
+			addr_func,
+			FP_TARGET_PROCESS_GAME_AND_MENU);
+		FunctionPatcherPatchFunction(&repl, nullptr);
+
+		WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_ID_TOKEN_RCE)");
+	}
+
+	if (type == PATCH_ENL_BUFFER_RCE)
+	{
+		real_enl_TransportManager_getContentTransporter = (enl_ContentTransporter * (*)(void *, unsigned char &))(gambit_rpx->textAddr + 0xB4108C);
+
+		// Address of 'enl::TransportManager::updateReceiveBuffer_'
+		uint32_t addr_func = gambit_rpx->textAddr + 0xB41140;
+		function_replacement_data_t repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
+			enl_TransportManager_updateReceiveBuffer_,
+			OSEffectiveToPhysical(addr_func),
+			addr_func,
+			FP_TARGET_PROCESS_GAME_AND_MENU);
+		FunctionPatcherPatchFunction(&repl, nullptr);
+
+		WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_BUFFER_RCE)");
+	}
+}
