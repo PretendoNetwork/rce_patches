@@ -97,20 +97,6 @@ void SPLATOON_ApplyPatch(EPatchType type)
 		return;
 	}
 
-	if (type == PATCH_ENL_ID_TOKEN_RCE)
-	{
-		// Address of 'enl::PiaUtil::ParseIdentificationToken'
-		uint32_t addr_func = gambit_rpx->textAddr + 0xB32C08;
-		function_replacement_data_t repl = REPLACE_FUNCTION_VIA_ADDRESS_FOR_PROCESS(
-			enl_ParseIdentificationToken,
-			OSEffectiveToPhysical(addr_func),
-			addr_func,
-			FP_TARGET_PROCESS_GAME_AND_MENU);
-		FunctionPatcherPatchFunction(&repl, nullptr);
-
-		WHBLogPrintf("rce_patches: Patched Splatoon (PATCH_ENL_ID_TOKEN_RCE)");
-	}
-
 	if (type == PATCH_ENL_BUFFER_RCE)
 	{
 		real_enl_TransportManager_getContentTransporter = (enl_ContentTransporter * (*)(void *, unsigned char &))(gambit_rpx->textAddr + 0xB4108C);
