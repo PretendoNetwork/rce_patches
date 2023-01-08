@@ -21,7 +21,7 @@ WUMS_ROOT := $(DEVKITPRO)/wums
 #-------------------------------------------------------------------------------
 TARGET		:=	rce_patches
 BUILD		:=	build
-SOURCES		:=	source source/patcher
+SOURCES		:=	source source/utils
 DATA		:=	data
 INCLUDES	:=	source
 
@@ -36,7 +36,17 @@ CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__ -D__WUPS__
 CXXFLAGS	:= $(CFLAGS) -std=gnu++20
 
 ASFLAGS	:=	$(ARCH)
-LDFLAGS	=	$(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map) -T$(WUMS_ROOT)/share/libkernel.ld $(WUPSSPECS) 
+LDFLAGS	=	$(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map) $(WUPSSPECS)
+
+ifeq ($(DEBUG),1)
+CXXFLAGS += -DDEBUG -g
+CFLAGS += -DDEBUG -g
+endif
+
+ifeq ($(DEBUG),VERBOSE)
+CXXFLAGS += -DDEBUG -DVERBOSE_DEBUG -g
+CFLAGS += -DDEBUG -DVERBOSE_DEBUG -g
+endif
 
 LIBS	:= -lfunctionpatcher -lkernel -lwups -lwut 
 
