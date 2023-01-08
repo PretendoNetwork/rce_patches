@@ -20,59 +20,52 @@
 #include <coreinit/cache.h>
 #include <coreinit/memorymap.h>
 
-std::optional<std::vector<OSDynLoad_NotifyData>> TryGetRPLInfo()
-{
-	int num_rpls = OSDynLoad_GetNumberOfRPLs();
-	if (num_rpls == 0)
-	{
-		return std::nullopt;
-	}
+std::optional<std::vector<OSDynLoad_NotifyData>> TryGetRPLInfo() {
+    int num_rpls = OSDynLoad_GetNumberOfRPLs();
+    if (num_rpls == 0) {
+        return std::nullopt;
+    }
 
-	DEBUG_FUNCTION_LINE("num_rpls: %d", num_rpls);
+    DEBUG_FUNCTION_LINE("num_rpls: %d", num_rpls);
 
-	std::vector<OSDynLoad_NotifyData> rpls;
-	rpls.resize(num_rpls);
+    std::vector<OSDynLoad_NotifyData> rpls;
+    rpls.resize(num_rpls);
 
-	bool ret = OSDynLoad_GetRPLInfo(0, num_rpls, rpls.data());
-	if (!ret)
-	{
-		return std::nullopt;
-	}
+    bool ret = OSDynLoad_GetRPLInfo(0, num_rpls, rpls.data());
+    if (!ret) {
+        return std::nullopt;
+    }
 
-	return rpls;
+    return rpls;
 }
 
-bool PatchInstruction(void *instr, uint32_t original, uint32_t replacement)
-{
-	uint32_t current = *(uint32_t *)instr;
-	DEBUG_FUNCTION_LINE("current instr %08x", current);
-	if (current != original)
-		return current == replacement;
+bool PatchInstruction(void *instr, uint32_t original, uint32_t replacement) {
+    uint32_t current = *(uint32_t *) instr;
+    DEBUG_FUNCTION_LINE("current instr %08x", current);
+    if (current != original)
+        return current == replacement;
 
-	KernelCopyData(OSEffectiveToPhysical((uint32_t)instr), OSEffectiveToPhysical((uint32_t)&replacement), sizeof(replacement));
-	// Only works on AROMA! WUPS 0.1's KernelCopyData is uncached, needs DCInvalidate here instead
-	DCFlushRange(instr, 4);
-	ICInvalidateRange(instr, 4);
+    KernelCopyData(OSEffectiveToPhysical((uint32_t) instr), OSEffectiveToPhysical((uint32_t) &replacement), sizeof(replacement));
+    // Only works on AROMA! WUPS 0.1's KernelCopyData is uncached, needs DCInvalidate here instead
+    DCFlushRange(instr, 4);
+    ICInvalidateRange(instr, 4);
 
-	current = *(uint32_t *)instr;
-	DEBUG_FUNCTION_LINE("patched instr %08x", current);
+    current = *(uint32_t *) instr;
+    DEBUG_FUNCTION_LINE("patched instr %08x", current);
 
-	return true;
+    return true;
 }
 
-bool PatchDynLoadFunctions()
-{
-	uint32_t *patch1 = ((uint32_t *)&OSDynLoad_GetNumberOfRPLs) + 6;
-	uint32_t *patch2 = ((uint32_t *)&OSDynLoad_GetRPLInfo) + 22;
+bool PatchDynLoadFunctions() {
+    uint32_t *patch1 = ((uint32_t *) &OSDynLoad_GetNumberOfRPLs) + 6;
+    uint32_t *patch2 = ((uint32_t *) &OSDynLoad_GetRPLInfo) + 22;
 
-	if (!PatchInstruction(patch1, 0x41820038 /* beq +38 */, 0x60000000 /*nop*/))
-	{
-		return false;
-	}
-	if (!PatchInstruction(patch2, 0x41820100 /* beq +100 */, 0x60000000 /*nop*/))
-	{
-		return false;
-	}
+    if (!PatchInstruction(patch1, 0x41820038 /* beq +38 */, 0x60000000 /*nop*/)) {
+        return false;
+    }
+    if (!PatchInstruction(patch2, 0x41820100 /* beq +100 */, 0x60000000 /*nop*/)) {
+        return false;
+    }
 
-	return true;
+    return true;
 }

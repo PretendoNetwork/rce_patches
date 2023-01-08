@@ -12,10 +12,10 @@
 */
 #pragma once
 
-#include <optional>
-#include <vector>
-#include <string>
 #include <algorithm>
+#include <optional>
+#include <string>
+#include <vector>
 
 #include <coreinit/dynload.h>
 
@@ -24,11 +24,9 @@ using rplinfo = std::vector<OSDynLoad_NotifyData>;
 std::optional<rplinfo> TryGetRPLInfo();
 bool PatchDynLoadFunctions();
 
-constexpr inline std::optional<OSDynLoad_NotifyData> FindRPL(const rplinfo &rpls, const std::string &name)
-{
-	auto res = std::find_if(rpls.cbegin(), rpls.cend(), [&](const OSDynLoad_NotifyData &data)
-							{ return std::string(data.name).ends_with(name); });
-	if (res == rpls.cend())
-		return std::nullopt;
-	return *res;
+constexpr inline std::optional<OSDynLoad_NotifyData> FindRPL(const rplinfo &rpls, const std::string &name) {
+    auto res = std::find_if(rpls.cbegin(), rpls.cend(), [&](const OSDynLoad_NotifyData &data) { return std::string(data.name).ends_with(name); });
+    if (res == rpls.cend())
+        return std::nullopt;
+    return *res;
 }
