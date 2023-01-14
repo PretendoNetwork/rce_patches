@@ -48,7 +48,7 @@ ON_APPLICATION_START() {
     } else if (gActivateMK8Patches && mk8Patches.empty()) {
         DEBUG_FUNCTION_LINE("Add MK8 patches");
         if (!MARIO_KART_8_AddPatches(mk8Patches)) {
-            DEBUG_FUNCTION_LINE_ERR("Failed to add Mario Kart patches");
+            DEBUG_FUNCTION_LINE_ERR("Failed to add Mario Kart 8 patches");
             RemovePatches(mk8Patches);
         }
     }
@@ -69,7 +69,7 @@ ON_APPLICATION_START() {
         if (FunctionPatcher_IsFunctionPatched(patch.handle, &isPatched) == FUNCTION_PATCHER_RESULT_SUCCESS && isPatched) {
             DEBUG_FUNCTION_LINE("MK8: Function %s (handle: %08X) has been patched", patch.name.c_str(), patch.handle);
         } else {
-            DEBUG_FUNCTION_LINE_ERR("Splatoon: Function %s (handle: %08X) has NOT been patched", patch.name.c_str(), patch.handle);
+            DEBUG_FUNCTION_LINE_ERR("MK8: Function %s (handle: %08X) has NOT been patched", patch.name.c_str(), patch.handle);
         }
     }
     for (auto &patch : splatoonPatches) {

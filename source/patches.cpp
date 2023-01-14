@@ -119,7 +119,6 @@ bool MARIO_KART_8_AddPatches(std::vector<PatchData> &functionPatches) {
     }
     functionPatches.emplace_back("enl:Buffer::set", handle);
 
-    WHBLogPrintf("rce_patches: Patched Mario Kart 8 (PATCH_ENL_BUFFER_RCE)");
     return true;
 }
 
