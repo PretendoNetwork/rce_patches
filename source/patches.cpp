@@ -137,7 +137,7 @@ bool SPLATOON_AddPatches(std::vector<PatchData> &functionPatches) {
         DEBUG_FUNCTION_LINE_ERR("Failed to add \"enl_TransportManager_getContentTransporter\" patch");
         return false;
     }
-    functionPatches.emplace_back("enl::PiaUtil::ParseIdentificationToken", handle);
+    functionPatches.emplace_back("enl::TransportManager::getContentTransporter", handle);
 
     function_replacement_data_t repl1 = REPLACE_FUNCTION_OF_EXECUTABLE_BY_ADDRESS_WITH_VERSION(
             enl_TransportManager_updateReceiveBuffer_,
