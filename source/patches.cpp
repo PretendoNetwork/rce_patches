@@ -20,6 +20,9 @@ DECL_FUNCTION(enl_ContentTransporter *, enl_TransportManager_getContentTransport
 }
 
 DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, signed char const &bufferId, uint8_t *data, uint32_t size) {
+
+    static enl_RecordHeader s_TerminationRecord = {.mContentTransporterID = 0xff, .mContentLength = 0};
+
     // Check for end record in the data, if there is not, drop packet
     bool hasEndRecord = false;
 
@@ -36,12 +39,12 @@ DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, sign
         // Actual fix for the ENL nullptr deref crash (lmao)
         if (!contentTransp) {
             DEBUG_FUNCTION_LINE_INFO("Avoided ENL nullptr deref crash in enl_TransportManager_updateReceiveBuffer_!");
-            return;
+            return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, (uint8_t *) &s_TerminationRecord, sizeof(enl_RecordHeader));
         }
 
         if (record->mContentLength > 0x440) {
             DEBUG_FUNCTION_LINE_INFO("record->mContentLength was over 0x440 in enl_TransportManager_updateReceiveBuffer_!");
-            return;
+            return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, (uint8_t *) &s_TerminationRecord, sizeof(enl_RecordHeader));
         }
 
         pData += sizeof(enl_RecordHeader);
@@ -49,7 +52,7 @@ DECL_FUNCTION(void, enl_TransportManager_updateReceiveBuffer_, void *_this, sign
     }
 
     if (!hasEndRecord) {
-        return;
+        return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, (uint8_t *) &s_TerminationRecord, sizeof(enl_RecordHeader));
     }
 
     return real_enl_TransportManager_updateReceiveBuffer_(_this, bufferId, data, size);
