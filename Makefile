@@ -2,6 +2,8 @@
 .SUFFIXES:
 #-------------------------------------------------------------------------------
 
+DISTRO ?= git
+
 ifeq ($(strip $(DEVKITPRO)),)
 $(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitpro")
 endif
@@ -31,7 +33,7 @@ INCLUDES	:=	source
 CFLAGS	:=	-Wall -O2 -ffunction-sections \
 			$(MACHDEP)
 
-CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__ -D__WUPS__ 
+CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__ -D__WUPS__ -DDISTRO=\"$(DISTRO)\"
 
 CXXFLAGS	:= $(CFLAGS) -std=c++20
 

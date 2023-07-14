@@ -9,7 +9,7 @@
 
 WUPS_PLUGIN_NAME("rce_patches");
 WUPS_PLUGIN_DESCRIPTION("Patches security issues in WiiU games that could be triggered remotely");
-WUPS_PLUGIN_VERSION("v1.0");
+WUPS_PLUGIN_VERSION("v1.1-" DISTRO);
 WUPS_PLUGIN_AUTHOR("Rambo6Glaz, Maschell");
 WUPS_PLUGIN_LICENSE("");
 WUPS_USE_STORAGE("rce_patches"); // Unique id for the storage api
